@@ -1,19 +1,26 @@
 import javax.jms.*;
 import javax.naming.*;
 import java.util.Properties;
+import javax.jms.*;
 
-public class Producer
+public class MyProducer { //CurlyBrace missing
   private QueueConnectionFactory qFactory = null;
   private QueueConnection qConnect = null;
   private QueueSession qSession = null;
   private Queue sQueue = null;
-  private QeueueSender qSender = null; 
+  private QueueSender qSender = null; 
 
   /* Constructor. Establish the Producer */
-  public Producer (String broker, String username, String password) throws Exception{    
+  public MyProducer (String broker, String username, String password) throws Exception{    
     // Obtain a JNDI connection
     Properties env = new Properties();
     // ... specify the JNDI properties sprecific to the provider 
+
+//hier fehlen noch die properties
+
+    env.setProperty(Context.INITIAL_CONTEXT_FACTORY,"org.apache.activemq.jndi.ActiveMQInitialContextFactory");
+    env.setProperty(Context.PROVIDER_URL,"tcp://172.20.14.225:61616");
+    env.setProperty("queue.hello","hello");
     InitialContext jndi = new InitialContext(env);
     
     // Look up a JMS QueueConnectionFactory
@@ -40,11 +47,11 @@ public class Producer
   }
 
 /* Create and send message using qSender */
-protected void SendMessage() throws JMSException {
+protected void SendMessage(String username) throws JMSException {
   // Create message
   TextMessage message = qSession.createTextMessage();
   // Set payload
-  Message.setText(username+" Hello");
+  message.setText(username+" Hello");
   // Send Message 
   qSender.send(message);
  }
@@ -55,7 +62,7 @@ public void close() throws JMSException {
 }
 
 /* Run the Producer */
-public static void main(String argv[]) {
+public static void main(String argv[]) throws Exception{
   String broker, username, password;
   if (argv.length == 3) {
     broker = argv[0];
@@ -65,9 +72,8 @@ public static void main(String argv[]) {
     return;
   }
   // Create Producer
-  Producer producer = new Producer 
-                         (broker, username, password);
-  SendMessage();
+  MyProducer producer = new MyProducer(broker, username, password);
+  producer.SendMessage(username);
   // Close connection
   producer.close();
   }
