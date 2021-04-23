@@ -3,20 +3,23 @@ import javax.naming.*;
 import java.util.Properties;
 import java.io.*;
 
-public class Consumer implements MessageListener {
+public class MyConsumer implements MessageListener {
   private QueueConnectionFactory qFactory = null;
   private QueueConnection qConnect = null;
   private QueueSession qSession = null;
   private Queue rQueue = null;
-  private QeueueReceiver qReceiver = null; 
+  private QueueReceiver qReceiver = null; 
 
   /* Constructor. Establish the Consumer */
-  public Consumer (String broker, String username, String password) throws Exception{
+  public MyConsumer (String broker, String username, String password) throws Exception{
      
     // Obtain a JNDI connection
     Properties env = new Properties();
     // ... specify the JNDI properties sprecific to the
     //     provider 
+env.setProperty(Context.INITIAL_CONTEXT_FACTORY,"org.apache.activemq.jndi.ActiveMQInitialContextFactory");
+env.setProperty(Context.PROVIDER_URL,"tcp://172.20.14.225:61616");
+env.setProperty("queue.hello","hello");
     InitialContext jndi = new InitialContext(env);
     
     // Look up a JMS QueueConnectionFactory
@@ -46,11 +49,11 @@ public class Consumer implements MessageListener {
   }
 
   /* Receive message from qReceiver */
-  public void onMessage (Message message){
+  public void onMessage (Message message) {
     try {
       TextMessage textMessage = (TextMessage) message;
       String text = textMessage.getText();
-      System.outprintln 
+      System.out.println 
          ("Message received – " + text + " from" +
             message.getJMSCorrelationID());
         } catch (java.lang.Exception rte) {
@@ -64,7 +67,7 @@ public class Consumer implements MessageListener {
   }
 
   /* Run the Consumer */
-  public static void main(String argv[]) {
+  public static void main(String argv[]) throws Exception {
     String broker, username, password;
     if (argv.length == 3) {
       broker = argv[0];
@@ -74,9 +77,8 @@ public class Consumer implements MessageListener {
       return;
     }
     // Create Consumer
-    Consumer consumer  = new Consumer 
-                           (broker, username, password);
-    System.out.println ("\Consumer started: \n");
+    MyConsumer consumer  = new MyConsumer (broker, username, password);
+    System.out.println ("consumer started: \n");
     // Close connection
     consumer.close();
     }
